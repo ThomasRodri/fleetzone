@@ -15,98 +15,97 @@ steps:
   # -------------------------------
   # Instalar o .NET 9 SDK
   # -------------------------------
-  - task: UseDotNet@2
-    displayName: 'Instalar .NET 9 SDK'
-    inputs:
-      packageType: 'sdk'
-      version: '9.0.x'
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+  
+task: UseDotNet@2
+  displayName: 'Instalar .NET 9 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '9.0.x'
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
   # -------------------------------
   # Restaurar pacotes NuGet
   # -------------------------------
-  - task: DotNetCoreCLI@2
-    displayName: 'Restaurar pacotes NuGet'
-    inputs:
-      command: 'restore'
-      projects: '**/*.csproj'
+  
+task: DotNetCoreCLI@2
+  displayName: 'Restaurar pacotes NuGet'
+  inputs:
+    command: 'restore'
+    projects: '*/.csproj'
 
   # -------------------------------
   # Build do projeto
   # -------------------------------
-  - task: DotNetCoreCLI@2
-    displayName: 'Build do projeto'
-    inputs:
-      command: 'build'
-      projects: '**/*.csproj'
-      arguments: '--configuration $(buildConfiguration)'
+  
+task: DotNetCoreCLI@2
+  displayName: 'Build do projeto'
+  inputs:
+    command: 'build'
+    projects: '*/.csproj'
+    arguments: '--configuration $(buildConfiguration)'
 
   # -------------------------------
   # Executar testes
   # -------------------------------
-  - task: DotNetCoreCLI@2
-    displayName: 'Executar testes'
-    inputs:
-      command: 'test'
-      projects: '**/*.csproj'
-      arguments: '--configuration $(buildConfiguration)'
+  
+task: DotNetCoreCLI@2
+  displayName: 'Executar testes'
+  inputs:
+    command: 'test'
+    projects: '*/.csproj'
+    arguments: '--configuration $(buildConfiguration)'
 
   # -------------------------------
   # Publicar artefatos
   # -------------------------------
-  - task: DotNetCoreCLI@2
-    displayName: 'Publicar artefatos'
-    inputs:
-      command: 'publish'
-      projects: '**/*.csproj'
-      arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+  
+task: DotNetCoreCLI@2
+  displayName: 'Publicar artefatos'
+  inputs:
+    command: 'publish'
+    projects: '*/.csproj'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publicar artefato no DevOps'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: 'drop'
-
-  # -------------------------------
-  # Instalar o dotnet-ef globalmente (.NET 9)
-  # -------------------------------
-  - script: dotnet tool install --global dotnet-ef --version 9.0.0
-    displayName: 'Instalar dotnet-ef (.NET 9)'
+  
+task: PublishBuildArtifacts@1
+  displayName: 'Publicar artefato no DevOps'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
 
   # -------------------------------
-  # Atualizar PATH para o dotnet-ef
+  # Instalar e rodar dotnet-ef (.NET 9)
   # -------------------------------
-  - script: |
-      export PATH=$PATH:$HOME/.dotnet/tools
-    displayName: 'Atualizar PATH para dotnet-ef'
-
-  # -------------------------------
-  # Executar EF Migrations
-  # -------------------------------
-  - script: |
-      echo "Rodando migrations no Azure SQL..."
-      dotnet ef database update --connection "$(connectionString)" --project $(Build.SourcesDirectory)/SafeCap/SafeCap.csproj
-    displayName: 'Executar EF Migrations'
+  
+script: |
+    echo "Instalando dotnet-ef (9.0.0)..."
+    dotnet tool install --global dotnet-ef --version 9.0.0
+    export PATH="$PATH:$HOME/.dotnet/tools"
+    echo "Rodando migrations no Azure SQL..."
+    dotnet ef database update --connection "$(connectionString)" --project $(Build.SourcesDirectory)/SafeCap/SafeCap.csproj
+  displayName: 'Executar EF Migrations (.NET 9)'
 
   # -------------------------------
   # Build e Push da imagem Docker (.NET 9)
   # -------------------------------
-  - task: Docker@2
-    displayName: 'Build e Push da Imagem Docker (.NET 9)'
-    inputs:
-      containerRegistry: $(dockerRegistryServiceConnection)
-      repository: $(dockerImageName)
-      command: 'buildAndPush'
-      Dockerfile: 'SafeCap/Dockerfile'
-      buildContext: 'SafeCap'
-      tags: 'latest'
+  
+task: Docker@2
+  displayName: 'Build e Push da Imagem Docker (.NET 9)'
+  inputs:
+    containerRegistry: $(dockerRegistryServiceConnection)
+    repository: $(dockerImageName)
+    command: 'buildAndPush'
+    Dockerfile: 'SafeCap/Dockerfile'
+    buildContext: 'SafeCap'
+    tags: 'latest'
 
   # -------------------------------
   # Deploy no Azure Web App via Docker
   # -------------------------------
-  - task: AzureWebAppContainer@1
-    displayName: 'Deploy no Azure Web App via Docker'
-    inputs:
-      azureSubscription: 'Azure-Fleetzone'
-      appName: 'app-fleetzone-sprint4'
-      containers: '$(dockerImageName):latest'
+  
+task: AzureWebAppContainer@1
+  displayName: 'Deploy no Azure Web App via Docker'
+  inputs:
+    azureSubscription: 'Azure-Fleetzone'
+    appName: 'app-fleetzone-sprint4'
+    containers: '$(dockerImageName):latest'
