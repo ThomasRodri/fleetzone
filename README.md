@@ -138,4 +138,4 @@ Observação: todos os requisitos funcionais da Sprint 4 estão implementados e 
 
 
 Centralizar versões de pacotes com Directory.Packages.props para evitar avisos de unificação de versão.
-Atualizar exemplos de configuração (ex.: strings de conexão) conforme seu ambiente..
+Atualizar exemplos de configuração (ex.: strings de conexão) conforme seu ambiente...
