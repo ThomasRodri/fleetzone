@@ -1,0 +1,6 @@
+@SafeCap_HostAddress = http://localhost:5239
+
+GET {{SafeCap_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
