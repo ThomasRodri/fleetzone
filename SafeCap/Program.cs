@@ -35,7 +35,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8080); // Garante que escute no Docker
+    options.ListenAnyIP(80); // Garante que escute no Docker
 });
 
 
