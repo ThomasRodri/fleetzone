@@ -7,7 +7,6 @@ pool:
  
 variables:
   buildConfiguration: 'Release'
-  connectionString: $(AZURE_SQL_CONNECTION_STRING)
   dockerRegistryServiceConnection: 'ACR-Fleetzone'
   dockerImageName: 'fleetzoneacr.azurecr.io/fleetzone-app'
  
@@ -42,7 +41,7 @@ steps:
       arguments: '--configuration $(buildConfiguration)'
  
   # -------------------------------
-  # Executar testes
+  # Executar testes (opcional)
   # -------------------------------
   - task: DotNetCoreCLI@2
     displayName: 'Executar testes'
@@ -66,17 +65,6 @@ steps:
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: 'drop'
- 
-  # -------------------------------
-  # Instalar e rodar dotnet-ef (.NET 9)
-  # -------------------------------
-  - script: |
-      echo "Instalando dotnet-ef (9.0.0)..."
-      dotnet tool install --global dotnet-ef --version 9.0.0
-      export PATH="$PATH:$HOME/.dotnet/tools"
-      echo "Rodando migrations no Azure SQL..."
-      dotnet ef database update --connection "$(connectionString)" --project $(Build.SourcesDirectory)/SafeCap/SafeCap.csproj
-    displayName: 'Executar EF Migrations (.NET 9)'
  
   # -------------------------------
   # Build e Push da imagem Docker (.NET 9)
